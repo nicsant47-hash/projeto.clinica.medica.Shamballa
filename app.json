@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "Clínica App",
+    "slug": "proj-clinica-squad",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "backgroundColor": "#1565C0"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.clinicaapp.squad"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
