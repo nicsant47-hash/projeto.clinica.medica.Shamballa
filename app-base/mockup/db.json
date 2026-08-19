@@ -1,0 +1,10 @@
+{
+  "medicos": [
+    { "id": 1, "nome": "João de Oliveira", "especialidade": "Cardiologia", "crm": "12345/MG", "email": "joao@clinica.com", "telefone": "(31) 98765-4321", "logradouro": "Rua A", "numero": "100", "complemento": "", "cidade": "Belo Horizonte", "uf": "MG", "cep": "30000-000" },
+    { "id": 2, "nome": "Antônio de Oliveira", "especialidade": "Pediatria", "crm": "23456/MG", "email": "antonio@clinica.com", "telefone": "(31) 99876-5432", "logradouro": "Av. B", "numero": "200", "complemento": "", "cidade": "Belo Horizonte", "uf": "MG", "cep": "30100-000" },
+    { "id": 3, "nome": "Maria da Silva", "especialidade": "Dermatologia", "crm": "34567/SP", "email": "maria@clinica.com", "telefone": "(11) 97654-3210", "logradouro": "Rua C", "numero": "300", "complemento": "", "cidade": "São Paulo", "uf": "SP", "cep": "01000-000" },
+    { "id": 4, "nome": "Beatriz Souza", "especialidade": "Ginecologia", "crm": "45678/RJ", "email": "beatriz@clinica.com", "telefone": "(21) 96543-2109", "logradouro": "Av. D", "numero": "400", "complemento": "", "cidade": "Rio de Janeiro", "uf": "RJ", "cep": "20000-000" },
+    { "id": 5, "nome": "Carlos Santos", "especialidade": "Neurologia", "crm": "56789/BA", "email": "carlos@clinica.com", "telefone": "(71) 95432-1098", "logradouro": "Praça E", "numero": "500", "complemento": "", "cidade": "Salvador", "uf": "BA", "cep": "40000-000" }
+  ],
+  "pacientes": []
+}

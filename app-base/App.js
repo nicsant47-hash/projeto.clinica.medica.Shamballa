@@ -1,5 +1,5 @@
 // App.js (Usando React Navigation como exemplo de estrutura profissional)
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {View, Text, StyleSheet} from 'react-native'
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -11,27 +11,45 @@ import Medico from './src/screens/Medico/Medico';
 //import Op2Screen from './src/screens/Paciente/Paciente';
 //import Op3Screen from './src/screens/Consulta/Consulta';
 import CadastroEdicaoMedicoScreen from './src/screens/Medico/CadastroEdicaoMedicoScreen';
+import { listarMedicos } from './src/services/medicosApi';
 
 const Stack = createStackNavigator();
 
 function App() {
-  const [medicos, setMedicos] = useState([
-    {id:1, "nome":"João de Oliveira", "especialidade":"Cardiologista", "crm": "12345/MG", "email": "joao@clinica.com", "telefone": "(31) 98765-4321", "endereco": "Rua A, 100"},
-    {id:2, "nome":"Antônio de Oliveira", "especialidade":"Pediatra", "crm": "23456/MG", "email": "antonio@clinica.com", "telefone": "(31) 99876-5432", "endereco": "Av. B, 200"},
-    {id:3, "nome":"Maria da Silva", "especialidade":"Dermatologista", "crm": "34567/SP", "email": "maria@clinica.com", "telefone": "(11) 97654-3210", "endereco": "Rua C, 300"},
-    {id:4, "nome":"Beatriz Souza", "especialidade":"Ginecologista", "crm": "45678/RJ", "email": "beatriz@clinica.com", "telefone": "(21) 96543-2109", "endereco": "Av. D, 400"},
-    {id:5, "nome":"Carlos Santos", "especialidade":"Neurologista", "crm": "56789/BA", "email": "carlos@clinica.com", "telefone": "(71) 95432-1098", "endereco": "Praça E, 500"},
-    // Adicionei mais dados para o agrupamento e expansão funcionar
-  ]);
+  const [medicos, setMedicos] = useState([]);
+  const [carregandoMedicos, setCarregandoMedicos] = useState(true);
+  const [erroMedicos, setErroMedicos] = useState(null);
   const [pacientes, setPacientes] = useState([]);
   const [consultas, setConsultas] = useState([]);
 
+  const buscarMedicos = useCallback(async () => {
+    setCarregandoMedicos(true);
+    setErroMedicos(null);
+    try {
+      const dados = await listarMedicos();
+      setMedicos(dados);
+    } catch (erro) {
+      setErroMedicos(erro.message);
+    } finally {
+      setCarregandoMedicos(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    buscarMedicos();
+  }, [buscarMedicos]);
 
   // Função que passa os dados de 'medicos' para a tela 'Op1'
   const MedicoList = (props) => (
-    <Medico {...props} medicos={medicos} />
+    <Medico
+      {...props}
+      medicos={medicos}
+      carregando={carregandoMedicos}
+      erro={erroMedicos}
+      recarregar={buscarMedicos}
+    />
   );
-  
+
   
   return (
     <NavigationContainer>
@@ -45,7 +63,9 @@ function App() {
         <Stack.Screen name="Medicos" component={MedicoList} options={{ title: 'Médico(a)s' }} />
         {/*<Stack.Screen name="Pacientes" component={Op2Screen} options={{ title: 'Pacientes' }} />
         <Stack.Screen name="Consultas" component={Op3Screen} options={{ title: 'Consultas' }} /> */}
-        <Stack.Screen name="MedicoForm" component={CadastroEdicaoMedicoScreen} options={{ title: 'Gerenciar Médico' }} />
+        <Stack.Screen name="MedicoForm" options={{ title: 'Gerenciar Médico' }}>
+          {(props) => <CadastroEdicaoMedicoScreen {...props} recarregarMedicos={buscarMedicos} />}
+        </Stack.Screen>
         {/* Adicionei uma tela temporária para as ações do card */}
         <Stack.Screen name="EmConstrucao" component={() => (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>

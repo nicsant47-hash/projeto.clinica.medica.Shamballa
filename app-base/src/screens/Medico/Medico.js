@@ -1,18 +1,21 @@
 // src/screens/Medico/Op1Screen.js (Reescrito)
 import React, { useState, useMemo } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  StyleSheet, 
-  SectionList, 
-  TouchableOpacity, 
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  SectionList,
+  TouchableOpacity,
   Platform,
   LayoutAnimation,
   UIManager,
   Button,
-  Image
+  Image,
+  Alert,
+  ActivityIndicator
 } from 'react-native';
+import { excluirMedico } from '../../services/medicosApi';
 
 // Ícones (você precisará ter esses arquivos PNG ou usar uma biblioteca de ícones)
 // Assumindo que você tem um ícone de lupa e um triângulo/seta
@@ -58,13 +61,39 @@ const groupAndFilterMedicos = (medicos, searchText) => {
 // =========================================================================
 // COMPONENTE CARD EXPANSÍVEL
 // =========================================================================
-const MedicoCard = ({ medico, navigation }) => {
+const MedicoCard = ({ medico, navigation, recarregar }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [excluindo, setExcluindo] = useState(false);
 
   const toggleExpand = () => {
     // Anima a mudança de layout
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setIsExpanded(!isExpanded);
+  };
+
+  const handleExcluir = () => {
+    Alert.alert(
+      'Excluir médico',
+      `Tem certeza que deseja excluir ${medico.nome}?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: async () => {
+            setExcluindo(true);
+            try {
+              await excluirMedico(medico.id);
+              await recarregar();
+            } catch (erro) {
+              Alert.alert('Erro', erro.message);
+            } finally {
+              setExcluindo(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -96,12 +125,13 @@ const MedicoCard = ({ medico, navigation }) => {
           <View style={cardStyles.actionButtons}>
             <Button
               title="Editar"
-              onPress={() => navigation.navigate('MedicoForm', medico)} // Deveria ser uma tela de edição
+              onPress={() => navigation.navigate('MedicoForm', { medico })}
             />
             <Button
-              title="Desativar Perfil"
+              title={excluindo ? 'Excluindo...' : 'Excluir'}
               color="red"
-              onPress={() => navigation.navigate('EmConstrucao')} 
+              disabled={excluindo}
+              onPress={handleExcluir}
             />
           </View>
         </View>
@@ -113,7 +143,7 @@ const MedicoCard = ({ medico, navigation }) => {
 // =========================================================================
 // TELA PRINCIPAL
 // =========================================================================
-const Medico = ({ navigation, medicos }) => {
+const Medico = ({ navigation, medicos, carregando, erro, recarregar }) => {
   const [searchText, setSearchText] = useState('');
 
   // Use useMemo para recalcular as seções apenas quando 'medicos' ou 'searchText' mudar
@@ -121,7 +151,7 @@ const Medico = ({ navigation, medicos }) => {
 
   return (
     <View style={styles.container}>
-      
+
       {/* CAMPO PESQUISAR (Não rolável) */}
       <View style={styles.searchContainer}>
         <TextInput
@@ -133,20 +163,37 @@ const Medico = ({ navigation, medicos }) => {
         <Image source={IconeLupa} style={styles.searchIcon} />
       </View>
 
+      {/* ESTADOS DE CARREGAMENTO / ERRO */}
+      {carregando && (
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color="#007AFF" />
+        </View>
+      )}
+      {!carregando && erro && (
+        <View style={styles.centered}>
+          <Text style={styles.erroTexto}>Erro ao carregar médicos: {erro}</Text>
+          <Button title="Tentar novamente" onPress={recarregar} />
+        </View>
+      )}
+
       {/* LISTA ROLÁVEL (Ocupa 80% da tela) */}
-      <View style={styles.listWrapper}>
-        <SectionList
-          sections={sections}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => <MedicoCard medico={item} navigation={navigation} />}
-          renderSectionHeader={({ section: { title } }) => (
-            <Text style={styles.sectionHeader}>{title}</Text>
-          )}
-          // Estilo para o SectionList
-          contentContainerStyle={styles.sectionListContent}
-          stickySectionHeadersEnabled={true} // Mantém as letras fixas no topo
-        />
-      </View>
+      {!carregando && !erro && (
+        <View style={styles.listWrapper}>
+          <SectionList
+            sections={sections}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+              <MedicoCard medico={item} navigation={navigation} recarregar={recarregar} />
+            )}
+            renderSectionHeader={({ section: { title } }) => (
+              <Text style={styles.sectionHeader}>{title}</Text>
+            )}
+            // Estilo para o SectionList
+            contentContainerStyle={styles.sectionListContent}
+            stickySectionHeadersEnabled={true} // Mantém as letras fixas no topo
+          />
+        </View>
+      )}
 
       {/* BOTÃO FIXO (Não rolável) */}
       <View style={styles.fixedButtonContainer}>
@@ -189,9 +236,20 @@ const styles = StyleSheet.create({
     tintColor: '#aaa',
   },
   listWrapper: {
-    // Ocupa o restante do espaço após o campo de pesquisa, 
+    // Ocupa o restante do espaço após o campo de pesquisa,
     // mas antes do botão fixo. Usamos flex: 1 para o SectionList.
-    flex: 1, 
+    flex: 1,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  erroTexto: {
+    color: 'red',
+    textAlign: 'center',
+    marginBottom: 10,
   },
   sectionListContent: {
     paddingBottom: 10, // Espaçamento extra no final da lista

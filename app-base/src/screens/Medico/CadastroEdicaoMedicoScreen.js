@@ -1,18 +1,19 @@
 import React from 'react';
 import MedicoForm from '../../components/MedicoForm'; // Ajuste o caminho
 import { View } from 'react-native';
-import { useRoute } from '@react-navigation/native'; // Hook do React Navigation
+import { criarMedico, atualizarMedico } from '../../services/medicosApi';
 
-const CadastroEdicaoMedicoScreen = ({ route, navigation }) => {
+const CadastroEdicaoMedicoScreen = ({ route, navigation, recarregarMedicos }) => {
   // A prop 'medico' virá via route.params
   const { medico } = route.params || {};
 
-  const handleSave = (novoDadosMedico) => {
-    // Aqui é onde você faria a chamada de API ou atualizaria o estado global
-    console.log('Dados a serem salvos/editados:', novoDadosMedico);
-    
-    // Supondo que você use uma função de contexto ou Redux para atualizar o estado
-    // Aqui, apenas chamamos o goBack() após o alerta no MedicoForm.js
+  const handleSave = async (novoDadosMedico) => {
+    if (medico && medico.id) {
+      await atualizarMedico(medico.id, novoDadosMedico);
+    } else {
+      await criarMedico(novoDadosMedico);
+    }
+    await recarregarMedicos();
   };
 
   const handleCancel = () => {

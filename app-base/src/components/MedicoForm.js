@@ -44,6 +44,9 @@ const MedicoForm = ({ medico, onSave, onCancel, navigation }) => {
   // 2. Estado para rastrear erros de validação
   const [errors, setErrors] = useState({});
 
+  // Trava o botão de salvar enquanto a requisição está em andamento
+  const [salvando, setSalvando] = useState(false);
+
   // 3. Define o título do botão e o modo do formulário
   const isEditing = !!medico;
   const buttonTitle = isEditing ? 'Concluir Edição' : 'Concluir Cadastro';
@@ -90,17 +93,25 @@ const MedicoForm = ({ medico, onSave, onCancel, navigation }) => {
   };
 
   // Função de submissão do formulário
-  const handleSubmit = () => {
-    if (validate()) {
-      // Supondo que a função onSave lida com a lógica de API/Estado
-      onSave(formData); 
+  const handleSubmit = async () => {
+    if (!validate()) {
+      Alert.alert('Erro', 'Por favor, preencha todos os campos obrigatórios.');
+      return;
+    }
+
+    setSalvando(true);
+    try {
+      // onSave lida com a chamada de API (POST ou PUT) e o recarregamento da lista
+      await onSave(formData);
       Alert.alert(
-        isEditing ? 'Sucesso' : 'Cadastro Concluído', 
+        isEditing ? 'Sucesso' : 'Cadastro Concluído',
         isEditing ? 'Dados do médico atualizados.' : 'Novo médico cadastrado com sucesso!'
       );
       navigation.goBack();
-    } else {
-      Alert.alert('Erro', 'Por favor, preencha todos os campos obrigatórios.');
+    } catch (erro) {
+      Alert.alert('Erro', erro.message || 'Não foi possível salvar o médico.');
+    } finally {
+      setSalvando(false);
     }
   };
   
@@ -230,13 +241,15 @@ const MedicoForm = ({ medico, onSave, onCancel, navigation }) => {
         <TouchableOpacity
           style={[formStyles.button, formStyles.saveButton]}
           onPress={handleSubmit}
+          disabled={salvando}
         >
-          <Text style={formStyles.buttonText}>{buttonTitle}</Text>
+          <Text style={formStyles.buttonText}>{salvando ? 'Salvando...' : buttonTitle}</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity
           style={[formStyles.button, formStyles.cancelButton]}
           onPress={onCancel || (() => navigation.goBack())}
+          disabled={salvando}
         >
           <Text style={formStyles.buttonText}>Cancelar</Text>
         </TouchableOpacity>
