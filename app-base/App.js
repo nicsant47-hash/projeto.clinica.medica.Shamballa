@@ -1,5 +1,5 @@
 // App.js (Usando React Navigation como exemplo de estrutura profissional)
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import {View, Text, StyleSheet} from 'react-native'
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -11,46 +11,16 @@ import Medico from './src/screens/Medico/Medico';
 //import Op2Screen from './src/screens/Paciente/Paciente';
 //import Op3Screen from './src/screens/Consulta/Consulta';
 import CadastroEdicaoMedicoScreen from './src/screens/Medico/CadastroEdicaoMedicoScreen';
-import { listarMedicos } from './src/services/medicosApi';
 
 const Stack = createStackNavigator();
 
 function App() {
+  // 'medicos' não é mais usado por Medico.js (que agora busca via GET sozinho),
+  // mantido aqui apenas porque outras telas ainda podem referenciá-lo (limpeza opcional).
   const [medicos, setMedicos] = useState([]);
-  const [carregandoMedicos, setCarregandoMedicos] = useState(true);
-  const [erroMedicos, setErroMedicos] = useState(null);
   const [pacientes, setPacientes] = useState([]);
   const [consultas, setConsultas] = useState([]);
 
-  const buscarMedicos = useCallback(async () => {
-    setCarregandoMedicos(true);
-    setErroMedicos(null);
-    try {
-      const dados = await listarMedicos();
-      setMedicos(dados);
-    } catch (erro) {
-      setErroMedicos(erro.message);
-    } finally {
-      setCarregandoMedicos(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    buscarMedicos();
-  }, [buscarMedicos]);
-
-  // Função que passa os dados de 'medicos' para a tela 'Op1'
-  const MedicoList = (props) => (
-    <Medico
-      {...props}
-      medicos={medicos}
-      carregando={carregandoMedicos}
-      erro={erroMedicos}
-      recarregar={buscarMedicos}
-    />
-  );
-
-  
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Splash">
@@ -60,12 +30,10 @@ function App() {
         <Stack.Screen name="Menu" component={MenuScreen} options={{ title: 'Menu Principal' }} />
         
         
-        <Stack.Screen name="Medicos" component={MedicoList} options={{ title: 'Médico(a)s' }} />
+        <Stack.Screen name="Medicos" component={Medico} options={{ title: 'Médico(a)s' }} />
         {/*<Stack.Screen name="Pacientes" component={Op2Screen} options={{ title: 'Pacientes' }} />
         <Stack.Screen name="Consultas" component={Op3Screen} options={{ title: 'Consultas' }} /> */}
-        <Stack.Screen name="MedicoForm" options={{ title: 'Gerenciar Médico' }}>
-          {(props) => <CadastroEdicaoMedicoScreen {...props} recarregarMedicos={buscarMedicos} />}
-        </Stack.Screen>
+        <Stack.Screen name="MedicoForm" component={CadastroEdicaoMedicoScreen} options={{ title: 'Gerenciar Médico' }} />
         {/* Adicionei uma tela temporária para as ações do card */}
         <Stack.Screen name="EmConstrucao" component={() => (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>

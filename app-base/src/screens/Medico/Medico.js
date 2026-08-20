@@ -1,5 +1,5 @@
 // src/screens/Medico/Op1Screen.js (Reescrito)
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -15,7 +15,8 @@ import {
   Alert,
   ActivityIndicator
 } from 'react-native';
-import { excluirMedico } from '../../services/medicosApi';
+import { useFocusEffect } from '@react-navigation/native';
+import { BASE_URL } from '../../config';
 
 // Ícones (você precisará ter esses arquivos PNG ou usar uma biblioteca de ícones)
 // Assumindo que você tem um ícone de lupa e um triângulo/seta
@@ -83,7 +84,10 @@ const MedicoCard = ({ medico, navigation, recarregar }) => {
           onPress: async () => {
             setExcluindo(true);
             try {
-              await excluirMedico(medico.id);
+              const resposta = await fetch(`${BASE_URL}/medicos/${medico.id}`, {
+                method: 'DELETE',
+              });
+              if (!resposta.ok) throw new Error('Não foi possível excluir o médico.');
               await recarregar();
             } catch (erro) {
               Alert.alert('Erro', erro.message);
@@ -143,8 +147,34 @@ const MedicoCard = ({ medico, navigation, recarregar }) => {
 // =========================================================================
 // TELA PRINCIPAL
 // =========================================================================
-const Medico = ({ navigation, medicos, carregando, erro, recarregar }) => {
+const Medico = ({ navigation }) => {
   const [searchText, setSearchText] = useState('');
+  const [medicos, setMedicos] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState(null);
+
+  const buscarMedicos = useCallback(async () => {
+    setCarregando(true);
+    setErro(null);
+    try {
+      const resposta = await fetch(`${BASE_URL}/medicos`);
+      if (!resposta.ok) throw new Error('Falha ao buscar médicos');
+      const dados = await resposta.json();
+      setMedicos(dados);
+    } catch (erro) {
+      setErro(erro.message);
+    } finally {
+      setCarregando(false);
+    }
+  }, []);
+
+  // Roda toda vez que a tela recebe o foco (ex: ao voltar do formulário),
+  // assim a lista sempre reflete o que está no servidor.
+  useFocusEffect(
+    useCallback(() => {
+      buscarMedicos();
+    }, [buscarMedicos])
+  );
 
   // Use useMemo para recalcular as seções apenas quando 'medicos' ou 'searchText' mudar
   const sections = useMemo(() => groupAndFilterMedicos(medicos, searchText), [medicos, searchText]);
@@ -172,7 +202,7 @@ const Medico = ({ navigation, medicos, carregando, erro, recarregar }) => {
       {!carregando && erro && (
         <View style={styles.centered}>
           <Text style={styles.erroTexto}>Erro ao carregar médicos: {erro}</Text>
-          <Button title="Tentar novamente" onPress={recarregar} />
+          <Button title="Tentar novamente" onPress={buscarMedicos} />
         </View>
       )}
 
@@ -183,7 +213,7 @@ const Medico = ({ navigation, medicos, carregando, erro, recarregar }) => {
             sections={sections}
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
-              <MedicoCard medico={item} navigation={navigation} recarregar={recarregar} />
+              <MedicoCard medico={item} navigation={navigation} recarregar={buscarMedicos} />
             )}
             renderSectionHeader={({ section: { title } }) => (
               <Text style={styles.sectionHeader}>{title}</Text>
