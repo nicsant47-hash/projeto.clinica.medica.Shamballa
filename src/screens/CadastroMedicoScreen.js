@@ -8,6 +8,8 @@ import {
   ScrollView,
 } from "react-native";
 
+import api from "../../services/appi";
+
 const ESPECIALIDADES = [
   "Cardiologia",
   "Dermatologia",
