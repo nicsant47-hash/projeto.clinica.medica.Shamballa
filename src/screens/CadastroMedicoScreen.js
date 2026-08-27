@@ -8,7 +8,7 @@ import {
   ScrollView,
 } from "react-native";
 
-import api from "../../services/appi";
+import { criarMedico } from '../services/api';
 
 const ESPECIALIDADES = [
   "Cardiologia",
@@ -56,9 +56,29 @@ export default function CadastroMedicoScreen({ onVoltarParaLogin }) {
     return Object.keys(novosErros).length === 0;
   }
 
-  function handleCadastrar() {
-    if (validar()) {
+  async function handleCadastrar() {
+    if (!validar()) return;
+
+    try {
+      const dados = {
+        nome,
+        crm,
+        especialidade,
+        telefone,
+        email,
+        senha,
+      };
+
+      const medico = await criarMedico(dados);
+
+      console.log("Médico cadastrado:", medico);
+
       alert("Cadastro realizado com sucesso!");
+      onVoltarParaLogin();
+
+    } catch (error) {
+      console.error("Erro ao cadastrar médico:", error);
+      alert(error.message);
     }
   }
 
