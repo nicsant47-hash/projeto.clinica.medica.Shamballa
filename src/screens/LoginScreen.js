@@ -7,7 +7,7 @@ import {
   StyleSheet,
 } from "react-native";
 
-export default function LoginScreen({ onIrParaCadastroPaciente, onIrParaCadastroMedico }) {
+export default function LoginScreen({ onIrParaCadastroPaciente, onIrParaCadastroMedico, onIrParaSobreClinica }) {
   const [email, setEmail] = useState("");
 
   return (
@@ -47,6 +47,12 @@ export default function LoginScreen({ onIrParaCadastroPaciente, onIrParaCadastro
         <TouchableOpacity onPress={onIrParaCadastroMedico}>
           <Text style={styles.linkCadastro}>
             É médico(a)? <Text style={styles.linkCadastroForte}>Cadastre-se aqui</Text>
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={onIrParaSobreClinica}>
+          <Text style={styles.linkCadastro}>
+            <Text style={styles.linkCadastroForte}>Sobre a clínica</Text>
           </Text>
         </TouchableOpacity>
       </View>

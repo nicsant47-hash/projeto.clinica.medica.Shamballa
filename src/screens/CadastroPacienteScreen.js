@@ -6,7 +6,10 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
+
+import { consultarCep } from "../services/viacep";
 
 const REGEX_NOME = /^[A-Za-zÀ-ÿ\s]{3,}$/;
 const REGEX_CPF = /^\d{3}\.\d{3}\.\d{3}-\d{2}$/;
@@ -14,6 +17,7 @@ const REGEX_NASCIMENTO = /^\d{2}\/\d{2}\/\d{4}$/;
 const REGEX_TELEFONE = /^\(\d{2}\)\s?\d{4,5}-\d{4}$/;
 const REGEX_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const REGEX_SENHA = /^.{6,}$/;
+const REGEX_CEP = /^\d{5}-?\d{3}$/;
 
 export default function CadastroPacienteScreen({ onVoltarParaLogin }) {
   const [nome, setNome] = useState("");
@@ -22,7 +26,46 @@ export default function CadastroPacienteScreen({ onVoltarParaLogin }) {
   const [telefone, setTelefone] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [cep, setCep] = useState("");
+  const [logradouro, setLogradouro] = useState("");
+  const [bairro, setBairro] = useState("");
+  const [cidade, setCidade] = useState("");
+  const [uf, setUf] = useState("");
+  const [buscandoCep, setBuscandoCep] = useState(false);
+  const [avisoCep, setAvisoCep] = useState("");
   const [erros, setErros] = useState({});
+
+  // Dispara no onBlur, não a cada tecla: consultar a cada dígito digitado
+  // queima cota do ViaCEP à toa e atrapalha quem está digitando.
+  async function handleCepBlur() {
+    const cepLimpo = cep.replace(/\D/g, "");
+    setAvisoCep("");
+
+    if (cepLimpo.length !== 8) {
+      return;
+    }
+
+    setBuscandoCep(true);
+    try {
+      const endereco = await consultarCep(cepLimpo);
+
+      if (!endereco) {
+        setAvisoCep("CEP não encontrado. Preencha o endereço manualmente.");
+        return;
+      }
+
+      setLogradouro(endereco.logradouro || "");
+      setBairro(endereco.bairro || "");
+      setCidade(endereco.cidade || "");
+      setUf(endereco.uf || "");
+    } catch (erro) {
+      // Falha (timeout, 429, serviço fora do ar): aviso, não erro fatal.
+      // O cadastro continua possível preenchendo o endereço à mão.
+      setAvisoCep(erro.message || "Não foi possível buscar o endereço agora. Preencha manualmente.");
+    } finally {
+      setBuscandoCep(false);
+    }
+  }
 
   function validar() {
     const novosErros = {};
@@ -44,6 +87,18 @@ export default function CadastroPacienteScreen({ onVoltarParaLogin }) {
     }
     if (!REGEX_SENHA.test(senha)) {
       novosErros.senha = "Senha deve ter no mínimo 6 caracteres";
+    }
+    if (!REGEX_CEP.test(cep)) {
+      novosErros.cep = "CEP inválido, use 00000-000";
+    }
+    if (!logradouro.trim()) {
+      novosErros.logradouro = "Logradouro é obrigatório";
+    }
+    if (!cidade.trim()) {
+      novosErros.cidade = "Cidade é obrigatória";
+    }
+    if (!uf.trim()) {
+      novosErros.uf = "UF é obrigatória";
     }
 
     setErros(novosErros);
@@ -75,6 +130,30 @@ export default function CadastroPacienteScreen({ onVoltarParaLogin }) {
       <Campo label="Telefone" value={telefone} onChangeText={setTelefone} placeholder="(16) 99999-0001" keyboardType="phone-pad" erro={erros.telefone} />
       <Campo label="E-mail" value={email} onChangeText={setEmail} placeholder="ana.souza@email.com" keyboardType="email-address" autoCapitalize="none" erro={erros.email} />
       <Campo label="Senha" value={senha} onChangeText={setSenha} placeholder="••••••••" secureTextEntry erro={erros.senha} />
+
+      <View style={{ marginBottom: 14 }}>
+        <Text style={styles.label}>CEP</Text>
+        <View style={styles.linhaCep}>
+          <TextInput
+            style={[styles.input, styles.inputCep]}
+            placeholderTextColor="#90A4AE"
+            value={cep}
+            onChangeText={setCep}
+            onBlur={handleCepBlur}
+            placeholder="00000-000"
+            keyboardType="numeric"
+            maxLength={9}
+          />
+          {buscandoCep && <ActivityIndicator style={styles.indicadorCep} color="#1565C0" />}
+        </View>
+        {erros.cep ? <Text style={styles.erro}>{erros.cep}</Text> : null}
+        {!erros.cep && avisoCep ? <Text style={styles.aviso}>{avisoCep}</Text> : null}
+      </View>
+
+      <Campo label="Logradouro" value={logradouro} onChangeText={setLogradouro} placeholder="Rua, avenida..." erro={erros.logradouro} />
+      <Campo label="Bairro" value={bairro} onChangeText={setBairro} placeholder="Bairro" erro={erros.bairro} />
+      <Campo label="Cidade" value={cidade} onChangeText={setCidade} placeholder="Cidade" erro={erros.cidade} />
+      <Campo label="UF" value={uf} onChangeText={(texto) => setUf(texto.toUpperCase())} placeholder="SP" maxLength={2} autoCapitalize="characters" erro={erros.uf} />
 
       <TouchableOpacity style={styles.botaoPrimario} onPress={handleCadastrar}>
         <Text style={styles.textoBotaoPrimario}>Criar conta</Text>
@@ -120,4 +199,8 @@ const styles = StyleSheet.create({
   },
   textoBotaoPrimario: { color: "#fff", fontWeight: "600", fontSize: 15 },
   erro: { color: "#D32F2F", fontSize: 12, marginTop: 4 },
+  aviso: { color: "#EF6C00", fontSize: 12, marginTop: 4 },
+  linhaCep: { flexDirection: "row", alignItems: "center" },
+  inputCep: { flex: 1 },
+  indicadorCep: { marginLeft: 10 },
 });
