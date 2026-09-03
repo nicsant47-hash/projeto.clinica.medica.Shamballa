@@ -8,7 +8,7 @@ import {
   ScrollView,
 } from "react-native";
 
-import { criarMedico } from '../services/api';
+import { criarMedico } from '../../services/api';
 
 const ESPECIALIDADES = [
   "Cardiologia",
