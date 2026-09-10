@@ -10,6 +10,7 @@ import {
 } from "react-native";
 
 import { consultarCep } from "../services/viacep";
+import FotoPerfil from "../components/FotoPerfil";
 
 const REGEX_NOME = /^[A-Za-zÀ-ÿ\s]{3,}$/;
 const REGEX_CPF = /^\d{3}\.\d{3}\.\d{3}-\d{2}$/;
@@ -20,6 +21,7 @@ const REGEX_SENHA = /^.{6,}$/;
 const REGEX_CEP = /^\d{5}-?\d{3}$/;
 
 export default function CadastroPacienteScreen({ onVoltarParaLogin }) {
+  const [foto, setFoto] = useState(null);
   const [nome, setNome] = useState("");
   const [cpf, setCpf] = useState("");
   const [nascimento, setNascimento] = useState("");
@@ -123,6 +125,8 @@ export default function CadastroPacienteScreen({ onVoltarParaLogin }) {
 
       <Text style={styles.titulo}>Cadastro de paciente</Text>
       <Text style={styles.subtitulo}>Crie sua conta para agendar consultas</Text>
+
+      <FotoPerfil uri={foto} onFotoTirada={setFoto} />
 
       <Campo label="Nome completo" value={nome} onChangeText={setNome} placeholder="Ana Beatriz Souza" erro={erros.nome} />
       <Campo label="CPF" value={cpf} onChangeText={setCpf} placeholder="000.000.000-00" keyboardType="numeric" erro={erros.cpf} />

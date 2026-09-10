@@ -9,6 +9,7 @@ import {
 } from "react-native";
 
 import { criarMedico } from '../../services/api';
+import FotoPerfil from "../components/FotoPerfil";
 
 const ESPECIALIDADES = [
   "Cardiologia",
@@ -25,6 +26,7 @@ const REGEX_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const REGEX_SENHA = /^.{6,}$/;
 
 export default function CadastroMedicoScreen({ onVoltarParaLogin }) {
+  const [foto, setFoto] = useState(null);
   const [nome, setNome] = useState("");
   const [crm, setCrm] = useState("");
   const [especialidade, setEspecialidade] = useState(ESPECIALIDADES[0]);
@@ -67,6 +69,10 @@ export default function CadastroMedicoScreen({ onVoltarParaLogin }) {
         telefone,
         email,
         senha,
+        // Guardamos só a URI local por enquanto. Upload real de arquivo
+        // (multipart/FormData) fica para quando a API tiver um endpoint
+        // de upload — não dá pra mandar isso como campo de JSON comum.
+        foto,
       };
 
       const medico = await criarMedico(dados);
@@ -94,6 +100,8 @@ export default function CadastroMedicoScreen({ onVoltarParaLogin }) {
 
       <Text style={styles.titulo}>Cadastro de médico</Text>
       <Text style={styles.subtitulo}>Dados profissionais para atender na clínica</Text>
+
+      <FotoPerfil uri={foto} onFotoTirada={setFoto} />
 
       <Campo label="Nome completo" value={nome} onChangeText={setNome} placeholder="Dr. Roberto Alves" erro={erros.nome} />
       <Campo label="CRM" value={crm} onChangeText={setCrm} placeholder="SP-123456" erro={erros.crm} />

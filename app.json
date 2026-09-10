@@ -10,13 +10,39 @@
       "backgroundColor": "#1565C0"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Usamos a câmera para tirar a foto de perfil de pacientes e médicos.",
+        "NSFaceIDUsageDescription": "Usamos Face ID para destravar seu login com mais rapidez.",
+        "NSLocationWhenInUseUsageDescription": "Usamos sua localização para calcular a distância e o tempo até a clínica."
+      }
     },
     "android": {
-      "package": "com.clinicaapp.squad"
+      "package": "com.clinicaapp.squad",
+      "permissions": [
+        "CAMERA",
+        "USE_BIOMETRIC",
+        "USE_FINGERPRINT",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Usamos a câmera para tirar a foto de perfil de pacientes e médicos."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Usamos sua localização para calcular a distância e o tempo até a clínica."
+        }
+      ]
+    ]
   }
 }
