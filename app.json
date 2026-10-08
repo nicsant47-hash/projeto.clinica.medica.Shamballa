@@ -42,7 +42,8 @@
         {
           "locationWhenInUsePermission": "Usamos sua localização para calcular a distância e o tempo até a clínica."
         }
-      ]
+      ],
+      "react-native-ble-plx"
     ]
   }
 }
