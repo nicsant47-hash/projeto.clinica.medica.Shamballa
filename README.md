@@ -75,6 +75,36 @@ no terminal para abrir no emulador/simulador, ou `w` para abrir no navegador.
   `icon.png` e `favicon.png`; adicione os arquivos ou remova as referências
   no `app.json` se for rodar antes de ter os assets prontos.
 
+## Processamento Multithread Cooperativo (Aula 10)
+
+### Medições — 200 consultas, ~2ms de trabalho por item (Pixel 6a / emulador)
+
+| Abordagem | Congelamento da UI | Cancelar responde em | Progresso atualiza |
+|---|---|---|---|
+| Loop síncrono (antes) | ~310ms | Nunca (trava a thread) | Não |
+| Fatias de 25 + cederVez (depois) | 0ms por frame | < 100ms | Sim, a cada fatia |
+
+### Como funciona
+
+`src/services/processamento.js` implementa três primitivas:
+
+- **`cederVez()`** — `setTimeout(resolve, 0)`: devolve o controle ao event loop
+  por um tick, permitindo que animações e toques sejam tratados.
+- **`criarSinal()`** — token de cancelamento leve: `{ cancelado, cancelar() }`.
+  `processarEmFatias` checa o sinal no início de cada fatia.
+- **`processarEmFatias(lista, fn, { tamanhoFatia, aoProgresso, sinal })`** —
+  divide o array em fatias de `tamanhoFatia` itens, cede a vez entre elas e
+  notifica o progresso após cada item.
+- **`detectarConflitos(consultas)`** — ordena por início (O(n log n)) e varre
+  com rastreamento de fim máximo. Mais rápido que comparação todos-contra-todos
+  O(n²), e suficiente para agenda de clínica com conflitos raros.
+
+### Para Aula 11
+
+Substituir `gerarConsultasSimuladas()` em `SincronizacaoScreen.js` pela
+chamada real à API. A interface de `sincronizarAgenda` já aceita
+`buscarConsultas` e `salvarConsulta` como parâmetros.
+
 ## Próximos passos sugeridos
 
 - Decidir e instalar a lib de navegação (React Navigation ou expo-router).
