@@ -11,6 +11,7 @@ import {
 
 import { consultarCep } from "../services/viacep";
 import FotoPerfil from "../components/FotoPerfil";
+import { mascaraCpf, mascaraData, mascaraTelefone, mascaraCep } from "../utils/mascaras";
 
 const REGEX_NOME = /^[A-Za-zÀ-ÿ\s]{3,}$/;
 const REGEX_CPF = /^\d{3}\.\d{3}\.\d{3}-\d{2}$/;
@@ -129,9 +130,9 @@ export default function CadastroPacienteScreen({ onVoltarParaLogin }) {
       <FotoPerfil uri={foto} onFotoTirada={setFoto} />
 
       <Campo label="Nome completo" value={nome} onChangeText={setNome} placeholder="Ana Beatriz Souza" erro={erros.nome} />
-      <Campo label="CPF" value={cpf} onChangeText={setCpf} placeholder="000.000.000-00" keyboardType="numeric" erro={erros.cpf} />
-      <Campo label="Data de nascimento" value={nascimento} onChangeText={setNascimento} placeholder="DD/MM/AAAA" keyboardType="numeric" erro={erros.nascimento} />
-      <Campo label="Telefone" value={telefone} onChangeText={setTelefone} placeholder="(16) 99999-0001" keyboardType="phone-pad" erro={erros.telefone} />
+      <Campo label="CPF" value={cpf} onChangeText={(texto) => setCpf(mascaraCpf(texto))} placeholder="000.000.000-00" keyboardType="numeric" maxLength={14} erro={erros.cpf} />
+      <Campo label="Data de nascimento" value={nascimento} onChangeText={(texto) => setNascimento(mascaraData(texto))} placeholder="DD/MM/AAAA" keyboardType="numeric" maxLength={10} erro={erros.nascimento} />
+      <Campo label="Telefone" value={telefone} onChangeText={(texto) => setTelefone(mascaraTelefone(texto))} placeholder="(16) 99999-0001" keyboardType="phone-pad" maxLength={15} erro={erros.telefone} />
       <Campo label="E-mail" value={email} onChangeText={setEmail} placeholder="ana.souza@email.com" keyboardType="email-address" autoCapitalize="none" erro={erros.email} />
       <Campo label="Senha" value={senha} onChangeText={setSenha} placeholder="••••••••" secureTextEntry erro={erros.senha} />
 
@@ -142,7 +143,7 @@ export default function CadastroPacienteScreen({ onVoltarParaLogin }) {
             style={[styles.input, styles.inputCep]}
             placeholderTextColor="#90A4AE"
             value={cep}
-            onChangeText={setCep}
+            onChangeText={(texto) => setCep(mascaraCep(texto))}
             onBlur={handleCepBlur}
             placeholder="00000-000"
             keyboardType="numeric"

@@ -10,6 +10,7 @@ import {
 
 import { criarMedico } from '../../services/api';
 import FotoPerfil from "../components/FotoPerfil";
+import { mascaraCrm, mascaraTelefone } from "../utils/mascaras";
 
 const ESPECIALIDADES = [
   "Cardiologia",
@@ -104,7 +105,7 @@ export default function CadastroMedicoScreen({ onVoltarParaLogin }) {
       <FotoPerfil uri={foto} onFotoTirada={setFoto} />
 
       <Campo label="Nome completo" value={nome} onChangeText={setNome} placeholder="Dr. Roberto Alves" erro={erros.nome} />
-      <Campo label="CRM" value={crm} onChangeText={setCrm} placeholder="SP-123456" erro={erros.crm} />
+      <Campo label="CRM" value={crm} onChangeText={(texto) => setCrm(mascaraCrm(texto))} placeholder="SP-123456" autoCapitalize="characters" maxLength={9} erro={erros.crm} />
 
       <View style={{ marginBottom: 14 }}>
         <Text style={styles.label}>Especialidade</Text>
@@ -131,7 +132,7 @@ export default function CadastroMedicoScreen({ onVoltarParaLogin }) {
         </View>
       </View>
 
-      <Campo label="Telefone" value={telefone} onChangeText={setTelefone} placeholder="(16) 99999-1234" keyboardType="phone-pad" erro={erros.telefone} />
+      <Campo label="Telefone" value={telefone} onChangeText={(texto) => setTelefone(mascaraTelefone(texto))} placeholder="(16) 99999-1234" keyboardType="phone-pad" maxLength={15} erro={erros.telefone} />
       <Campo label="E-mail institucional" value={email} onChangeText={setEmail} placeholder="r.alves@clinica.com" keyboardType="email-address" autoCapitalize="none" erro={erros.email} />
       <Campo label="Senha" value={senha} onChangeText={setSenha} placeholder="••••••••" secureTextEntry erro={erros.senha} />
 

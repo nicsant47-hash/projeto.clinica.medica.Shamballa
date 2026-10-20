@@ -43,7 +43,17 @@
           "locationWhenInUsePermission": "Usamos sua localização para calcular a distância e o tempo até a clínica."
         }
       ],
-      "react-native-ble-plx"
+      [
+        "react-native-ble-plx",
+        {
+          "isBackgroundEnabled": true,
+          "modes": [
+            "peripheral",
+            "central"
+          ],
+          "bluetoothAlwaysPermission": "Permitir que $(PRODUCT_NAME) use o Bluetooth"
+        }
+      ]
     ]
   }
 }
